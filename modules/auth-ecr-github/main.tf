@@ -44,14 +44,26 @@ data "aws_iam_policy_document" "auth_ecr" {
     effect    = "Allow"
     resources = ["*"]
     actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchGetImage",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:CompleteLayerUpload",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:InitiateLayerUpload",
-      "ecr:PutImage",
-      "ecr:UploadLayerPart"
+        "ecr:GetAuthorizationToken"
+      , "ecr:BatchGetImage"
+      , "ecr:BatchCheckLayerAvailability"
+      , "ecr:CompleteLayerUpload"
+      , "ecr:GetDownloadUrlForLayer"
+      , "ecr:InitiateLayerUpload"
+      , "ecr:PutImage"
+      , "ecr:UploadLayerPart"
+      # For the task depoy
+      , "ecs:DescribeTaskDefinition"
+      , "ecs:RegisterTaskDefinition"
+      , "ecs:RunTask"
+      , "ecs:DescribeTasks"
+      , "iam:PassRole"
+      , "ecs:DescribeServices"
+      , "ecs:UpdateService"
+      , "ecr:DescribeImages"
+      # For the task pipeline
+      , "ssm:GetParameter"
+      , "secretsmanager:GetSecretValue"
     ]
   }
 }
