@@ -1,20 +1,12 @@
 # Terraform Module: [GithubActions] Auth to AWS securely
 
-Use this module to login securely to AWS using the action aws-actions/configure-aws-credentials@v2 in github Actions. This module implements the necessary resources in AWS to login using Assume Role. Using this configuration one do not need to share access keys, creating a more secure environment.
+Use this module to login securely to AWS using the action aws-actions/configure-aws-credentials@v4 in github Actions. This module implements the necessary resources in AWS to login using Assume Role. Using this configuration one do not need to share access keys, creating a more secure environment.
 
 # What is created
 The module creates the following resources:
 * OIDC Provider for GitHub Actions consumption
 * Role for being assumed
-* The following permissions to the role:
-  - ecr:UploadLayerPart
-  - ecr:PutImage
-  - ecr:InitiateLayerUpload
-  - ecr:GetDownloadUrlForLayer
-  - ecr:GetAuthorizationToken
-  - ecr:CompleteLayerUpload
-  - ecr:BatchGetImage
-  - ecr:BatchCheckLayerAvailability
+* Define permission policy based on "permissions" input
 
 # How to use
 Very simple, just call the module, like this:
@@ -23,7 +15,7 @@ Very simple, just call the module, like this:
 module "auth-ecr-github" {
   # Point to the module source in the github
   # Alwyas check for the latest version
-  source = "github.com/rafaeldomi/tf-mod-ghact-ecr?ref=v01/modules/auth-ecr-github"
+  source = "github.com/rafaeldomi/tf-mod-ghact-ecr?ref=v3/modules/auth-ecr-github"
 
   role_name = "github-actions-role"
 
@@ -31,6 +23,48 @@ module "auth-ecr-github" {
   allow_repo = [
     "repo:{org/owner}/{repo-name}:*"
   ]
+
+  # Now define the permissions that you want for this role
+  permissions = {
+    s3_permissions = {
+      effect = "Allow"
+      resources = ["*"]
+      actions = [
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ]
+    }
+    ecr_permissions = {
+      effect = "Allow"
+      resources = ["*"]
+      actions = [
+          "ecr:GetAuthorizationToken"
+        , "ecr:BatchGetImage"
+        , "ecr:BatchCheckLayerAvailability"
+        , "ecr:CompleteLayerUpload"
+        , "ecr:GetDownloadUrlForLayer"
+        , "ecr:InitiateLayerUpload"
+        , "ecr:PutImage"
+        , "ecr:UploadLayerPart"
+      ]
+    }
+    ecs_task_deploy = {
+      effect = "Allow"
+      resources = ["*"]
+      actions = [
+        "ecs:DescribeTaskDefinition"
+      , "ecs:RegisterTaskDefinition"
+      , "ecs:RunTask"
+      , "ecs:DescribeTasks"
+      , "iam:PassRole"
+      , "ecs:DescribeServices"
+      , "ecs:UpdateService"
+      , "ecr:DescribeImages"
+      ]
+    }
+  }
 }
 
 # This value will be used in the github action
@@ -63,10 +97,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: { RoleARN }
         aws-region: { AWSRegion }
@@ -83,3 +117,7 @@ Replace the values of RoleARN and AWSRegion.
 | Name | Description |
 | - | - |
 | role_arn | The ARN of the Role created |
+
+# Breaking Changes
+* Version v3
+  - Previous module set some permissions by default. In this version we removed that, now user needs to define the permissions needed for the role.
