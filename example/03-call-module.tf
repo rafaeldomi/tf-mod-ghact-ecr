@@ -1,5 +1,5 @@
 module "auth-ecr-github" {
-  source = "github.com/rafaeldomi/tf-mod-ghact-ecr?ref=v2/modules/auth-ecr-github"
+  source = "github.com/rafaeldomi/tf-mod-ghact-ecr?ref=v3/modules/auth-ecr-github"
 
   role_name = "github-actions-role"
 

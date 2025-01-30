@@ -38,43 +38,6 @@ data "aws_iam_policy_document" "github_actions_assume_role_policy" {
   }
 }
 
-# https://github.com/aws-actions/amazon-ecr-login
-data "aws_iam_policy_document" "auth_ecr" {
-  statement {
-    effect    = "Allow"
-    resources = ["*"]
-    actions = [
-        "ecr:GetAuthorizationToken"
-      , "ecr:BatchGetImage"
-      , "ecr:BatchCheckLayerAvailability"
-      , "ecr:CompleteLayerUpload"
-      , "ecr:GetDownloadUrlForLayer"
-      , "ecr:InitiateLayerUpload"
-      , "ecr:PutImage"
-      , "ecr:UploadLayerPart"
-      # For the task depoy
-      , "ecs:DescribeTaskDefinition"
-      , "ecs:RegisterTaskDefinition"
-      , "ecs:RunTask"
-      , "ecs:DescribeTasks"
-      , "iam:PassRole"
-      , "ecs:DescribeServices"
-      , "ecs:UpdateService"
-      , "ecr:DescribeImages"
-      # For the task pipeline
-      , "ssm:GetParameter"
-      , "secretsmanager:GetSecretValue"
-    ]
-  }
-}
-
-/* ecs service scheduler role */
-resource "aws_iam_role_policy" "role_auth_ecr" {
-  name   = "ecr_auth_ecr"
-  policy = data.aws_iam_policy_document.auth_ecr.json
-  role   = aws_iam_role.role_github_actions.id
-}
-
 # Custom permissions
 data "aws_iam_policy_document" "custom_permissions" {
   for_each = var.permissions
