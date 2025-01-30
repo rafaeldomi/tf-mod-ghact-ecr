@@ -74,3 +74,22 @@ resource "aws_iam_role_policy" "role_auth_ecr" {
   policy = data.aws_iam_policy_document.auth_ecr.json
   role   = aws_iam_role.role_github_actions.id
 }
+
+# Custom permissions
+data "aws_iam_policy_document" "custom_permissions" {
+  for_each = var.permissions
+
+  statement {
+    effect    = each.value.effect
+    actions   = each.value.actions
+    resources = each.value.resources
+  }
+}
+
+resource "aws_iam_role_policy" "generated_policies" {
+  for_each = data.aws_iam_policy_document.custom_permissions
+
+  name   = "policy_${each.key}"
+  policy = each.value.json
+  role   = aws_iam_role.role_github_actions.id
+}
