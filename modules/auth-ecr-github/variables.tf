@@ -13,4 +13,5 @@ variable "permissions" {
     resources = list(string)
     actions   = list(string)
   }))
+  default = {}
 }
